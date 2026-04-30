@@ -1,10 +1,19 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TasksModule } from './tasks/tasks.module';
+import configuration from './config/app.config';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/task-api'),
+    ConfigModule.forRoot({ isGlobal: true, load: [configuration]}),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (config: ConfigService) => ({
+        uri: config.get<string>('mongoUri')
+      }),
+      inject: [ConfigService],
+    }),
     TasksModule,
   ],
 })
