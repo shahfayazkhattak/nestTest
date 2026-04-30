@@ -3,12 +3,15 @@ import {
   Get,
   Post,
   Body,
+  Patch,
+  Delete,
   Param,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Controller('tasks')
 export class TasksController {
@@ -26,8 +29,18 @@ export class TasksController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createTaskDto: CreateTaskDto) {
-    const task = this.tasksService.create(createTaskDto);
-    return {message: 'Task created successfully', status: true, code: 200, data: task};
+  create(@Body() dto: CreateTaskDto) {
+    return this.tasksService.create(dto);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateTaskDto) {
+    return this.tasksService.update(id, dto);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@Param('id') id: string) {
+    return this.tasksService.remove(id);
   }
 }

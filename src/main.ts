@@ -5,11 +5,11 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Global validation & auto-transform request bodies to DTO classes
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,   // Strips properties not in DTO
-      transform: true,   // Transforms payloads to DTO instances
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true, // Extra safety
     }),
   );
 
