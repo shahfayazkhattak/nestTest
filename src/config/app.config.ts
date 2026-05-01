@@ -4,4 +4,6 @@ export default () => ({
   apiKey: process.env.API_KEY || 'dev-secret-key',
   nodeEnv: process.env.NODE_ENV || 'development',
   jwtSecret: process.env.JWT_SECRET || 'dev-secret-key',
+  redisUrl: process.env.REDIS_URL || 'redis://localhost:6379',
+  redisPassword: process.env.redisPassword || '',
 });

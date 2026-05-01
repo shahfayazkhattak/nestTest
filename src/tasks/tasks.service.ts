@@ -4,12 +4,19 @@ import { Model, Types } from 'mongoose';
 import { Task, TaskDocument } from './schemas/task.schema';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { NotificationsQueue } from 'src/notifications/queues/notifications.queue';
+import { TASK_EVENTS } from 'src/notifications/events/task.events';
 
 @Injectable()
 export class TasksService {
   private readonly logger = new Logger(TasksService.name);
 
-  constructor(@InjectModel(Task.name) private readonly taskModel: Model<TaskDocument>) {}
+  constructor(
+    @InjectModel(Task.name) private readonly taskModel: Model<TaskDocument>,
+    private readonly eventEmitter: EventEmitter2,
+    private readonly notificationsQueue: NotificationsQueue
+  ) {}
 
   async findAll(): Promise<Task[]> {
     this.logger.log('Fetching all tasks');
@@ -23,9 +30,16 @@ export class TasksService {
   }
 
   async create(dto: CreateTaskDto): Promise<Task> {
-    this.logger.log(`Creating task with title: ${dto.title}`);
-    const createdTask = new this.taskModel(dto);
-    return createdTask.save();
+    const createdTask = await this.taskModel.create(dto);
+    const payload = { taskId: createdTask.id, title: createdTask.title, timestamp: new Date() };
+
+    // 1️⃣ Emit synchronous event (only logs, no blocking operations)
+    this.eventEmitter.emit(TASK_EVENTS.CREATED, payload);
+
+    // 2️⃣ Push to background queue → triggers BullMQ processor
+    await this.notificationsQueue.addTaskCreated(payload);
+    this.logger.log(`Task created & events dispatched: ${createdTask.id}`);
+    return createdTask;
   }
 
   async update(id: string, dto: UpdateTaskDto): Promise<Task> {
