@@ -6,6 +6,7 @@ import configuration from './config/app.config';
 import { AuthModule } from './auth/auth.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { NotificationsModule } from './notifications/notifications.module';
+import { AccountsModule } from './accounts/accounts.module';
 
 @Module({
   imports: [
@@ -21,6 +22,8 @@ import { NotificationsModule } from './notifications/notifications.module';
     TasksModule,
     AuthModule,
     NotificationsModule,
+    AccountsModule,
   ],
 })
+//testing
 export class AppModule {}
